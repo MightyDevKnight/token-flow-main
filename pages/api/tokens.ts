@@ -1,10 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import NextCors from 'nextjs-cors';
 import Cors from 'cors';
 import { tokenData } from '../../utils/tokenData';
 import { PrismaClient } from '@prisma/client';
-const { v4: uuidv4 } = require('uuid');
 
 type Data = {
   result: string
@@ -31,14 +29,22 @@ function runMiddleware(req, res, fn) {
 }
 
 export default async function handler( req: NextApiRequest, res: NextApiResponse<Data>) {
-  await runMiddleware(req, res, cors)
+  await runMiddleware(req, res, cors)  
 
-  const userId = uuidv4();
-  const result = await prisma.token.create({
+  const userId = await tokenData.create(req.body.tokenData);
+  let stringAvailableThemes: string = '', stringThemeObjects: string = '';
+  req.body.availableThemes.map(theme => stringAvailableThemes += JSON.stringify(theme) + '---');
+  req.body.themeObjects.map(themeObject => stringThemeObjects += JSON.stringify(themeObject) + '---');
+  
+  await prisma.token.create({
     data:{
       userId: userId,
-      content: req.body.data
+      activeTheme: req.body.activeTheme !== null ? req.body.activeTheme : '',
+      availableThemes: stringAvailableThemes.slice(0, -3),
+      usedTokenSet: JSON.stringify(req.body.usedTokenSet),
+      themeObjects: stringThemeObjects.slice(0, -3),
     }
   });
-  return res.status(200).json({result: result.userId});  
+  
+  return res.status(200).json({result: userId});  
 }

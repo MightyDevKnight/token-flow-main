@@ -4,7 +4,6 @@ const position = { x: 0, y: 0 };
 const edgeType = 'smoothstep';
 import tokens from '../input.json';
 const converted = convertToTokenArray( {tokens} );
-
 // write a function that takes in a token array and returns unique parent ids depending on nested level
 function getParentIds(tokenArray) {
   const parentIds = [];
@@ -40,7 +39,7 @@ export function getFlowData(converted){
 
   let transformed = [];
 
-  const columnWidth = 360;
+  const columnWidth = 345;
   const nodeHeight = 40;
   const rowGap = 32;
   const padding = 0;
@@ -55,7 +54,7 @@ export function getFlowData(converted){
       position: {
         x:
           rootIndex > 0
-            ? margin + rootIndex * columnWidth*5 + rowGap * rootIndex
+            ? margin + rootIndex * columnWidth*2 + rowGap * rootIndex
             : margin,
         y: margin,
       },
@@ -69,11 +68,14 @@ export function getFlowData(converted){
         typoHeight = 5 * tokens.length;
       }
       const groupHeight = tokens.length * nodeHeight + padding + headerHeight * typoHeight; // 2 * 50 + 32
-      
+      let groupName = parentId;
+      groupName = groupName.replace(`${parentId.split('.').slice(0, 1)[0]}.`, "");
+      if(groupName === 'noGroupName')
+        groupName = "";
       transformed.push({
         id: parentId,
         parentNode: parentId.split('.').slice(0, 1)[0],
-        data: { label: parentId },
+        data: { label: groupName },
         type: 'group',
         position: { x: 0, y: totalHeight + headerHeight },
         style: {
@@ -90,11 +92,13 @@ export function getFlowData(converted){
       });
       
       tokens.forEach((token, index) => {
-        if(token.type !== 'typography' && token.type !== 'boxShadow'){        
+        const name = token.name.split(".");
+        if(token.type !== 'typography' && token.type !== 'boxShadow' && token.type !== 'composition'){        
           transformed.push({
             id: token.name,
             data: {
               ...token,
+              name: name[name.length-1],
               rawValue: token.value,
               value: checkIfAlias(token, converted)
                 ? getAliasValue(token, converted)
@@ -113,7 +117,7 @@ export function getFlowData(converted){
               id: `${token.name}-${value}`,
               data: {
                 ...token,
-                name: `${token.name}-${value}`,
+                name: name[name.length-1],
                 rawValue: token.value,
                 value: checkIfAlias(value, converted)
                     ? getAliasValue(value, converted)
@@ -127,28 +131,6 @@ export function getFlowData(converted){
               parentNode: parentId,
             });
           })
-        } else{
-          if(token.value.length){
-            token.value.map(value => {
-              Object.values(value).forEach((v) => {
-                // transformed.push({
-                //   id: `${token.name}-${value}`,
-                //   data: {
-                //     ...token,
-                //     name: `${token.name}-${value}`,
-                //     rawValue: token.value,
-                //     value: v,
-                //   },
-                //   position: {
-                //     x: padding,
-                //     y: (index * 5 + idx) * nodeHeight + padding + headerHeight,
-                //   },
-                //   type: 'selectorNode',
-                //   parentNode: parentId,
-                // }); 
-              })
-            })
-          }
         }
       });
       totalHeight = totalHeight + groupHeight + rowGap;
@@ -158,20 +140,19 @@ export function getFlowData(converted){
   const nodes = transformed;
 
   const edges = converted.reduce((acc, token) => {
-    if (token.type !== 'typography' && token.type !=='boxShadow' && checkIfAlias(token.value)) {
+    if (token.type !== 'typography' && token.type !=='boxShadow' && token.type !=='composition' && checkIfAlias(token.value)) {
       let alias = getAlias(token.value);
       if (alias.length > 0) {
         alias.forEach((alias) => {
           converted.forEach((t) => {
             if(t.name.includes(alias)){
-              alias = alias.replace(alias, t.name);
+              acc.push({
+                source: t.name,
+                target: token.name,
+                id: `${token.name}-${t.name}`,
+              });
             }
           })
-          acc.push({
-            source: alias,
-            target: token.name,
-            id: `${token.name}-${alias}`,
-          });
         });
       }
     }

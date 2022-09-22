@@ -8,6 +8,8 @@ import {
   Edge,
 } from "react-flow-renderer";
 
+import Box from "./Box";
+
 const targetHandleStyle: CSSProperties = { background: "#555" };
 const sourceHandleStyleA: CSSProperties = { ...targetHandleStyle };
 
@@ -20,21 +22,21 @@ const ColorSelectorNode: FC<NodeProps> = ({ data, isConnectable }) => {
   };
 
   return (
-    <div style={{ padding: "8px", width: '344px', backgroundColor: '#fff' }}>
+    <Box style={{ padding: "8px", width: '344px', backgroundColor: '#fff' }}>
       <Handle
         type="target"
         position={Position.Left}
         style={targetHandleStyle}
         onConnect={onConnect}
       />
-      <div
+      <Box
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <Box style={{ display: "flex", alignItems: "center" }}>
           <input
             className="nodrag"
             type="color"
@@ -50,17 +52,17 @@ const ColorSelectorNode: FC<NodeProps> = ({ data, isConnectable }) => {
               outline: "none",
             }}
           />
-          <div style={{ fontWeight: "bold", fontFamily: "monospace" }}>{data.name || "No name"}</div>
-        </div>
-        <div style={{ color: "#3e3e3e", marginLeft: '16px', fontFamily: "monospace" }}>{data.value}</div>
-      </div>
+          <Box style={{ fontWeight: "bold", fontFamily: "monospace" }}>{data.name || "No name"}</Box>
+        </Box>
+        <Box style={{ color: "#3e3e3e", marginLeft: '16px', fontFamily: "monospace" }}>{data.value}</Box>
+      </Box>
       <Handle
         type="source"
         position={Position.Right}
         style={sourceHandleStyleA}
         isConnectable={isConnectable}
       />
-    </div>
+    </Box>
   );
 };
 

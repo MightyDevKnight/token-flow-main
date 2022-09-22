@@ -5,9 +5,11 @@ import Cors from 'cors';
 import { tokenData } from '../../utils/tokenData';
 import { PrismaClient } from '@prisma/client';
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
+const fs = require('fs');
 
 type Data = {
-  result: string
+  result: Object,
 }
 
 const prisma = new PrismaClient();
@@ -31,11 +33,34 @@ function runMiddleware(req, res, fn) {
 }
 
 export default async function handler( req: NextApiRequest, res: NextApiResponse<Data>) {
-  await runMiddleware(req, res, cors)
-  const result = await prisma.token.findUnique({
-    where: {
-      id: parseInt('1'),
+  await runMiddleware(req, res, cors);
+  
+  const fileName = req.query.id as string;
+  if(fileName === 'undefined')
+    return res.status(405).end();
+  try {
+    
+    const themeData = await prisma.token.findFirst({
+      where: {
+        userId: fileName,
+      }
     }
-  });  
-  return res.status(200).json({ result: result.content});
+    );
+    const token = await tokenData.read(fileName);
+    if(themeData !== null)
+      return res.status(200).json({ result: {token, themeData}});
+  } catch (error) {
+    res.json(error);
+    res.status(405).end();
+  }
+  // if(req.query.id !== 'undefined'){
+  //   const themeData = await prisma.token.findFirst({
+  //     where: {
+  //       userId: fileName,
+  //     }
+  //   }
+  //   );
+  //   const token = await tokenData.read(fileName);
+  //   return res.status(200).json({ result: {token, themeData}});  
+  // }
 }

@@ -1,0 +1,34 @@
+{
+  "global": {
+    "noGroupName": {
+      "asdf": {
+        "value": "#764848",
+        "type": "color"
+      }
+    }
+  },
+  "refwefw": {
+    "noGroupName": {
+      "fewfw": {
+        "value": "23",
+        "type": "opacity"
+      },
+      "asdf": {
+        "value": "#e00000",
+        "type": "color"
+      }
+    }
+  },
+  "abc": {
+    "noGroupName": {
+      "fff": {
+        "value": "sdf",
+        "type": "spacing"
+      },
+      "qqq": {
+        "value": "{asdf}",
+        "type": "color"
+      }
+    }
+  }
+}

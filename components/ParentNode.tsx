@@ -1,4 +1,5 @@
 import React, { memo, FC, CSSProperties } from "react";
+import Box from "./Box";
 
 import {
   Handle,
@@ -17,7 +18,7 @@ const ParentNode: FC<NodeProps> = ({ data, isConnectable }) => {
   };
 
   return (
-    <div
+    <Box
       style={{
         padding: "8px",
         backgroundColor: "black",
@@ -27,10 +28,10 @@ const ParentNode: FC<NodeProps> = ({ data, isConnectable }) => {
         fontWeight: "bold",
       }}
     >
-      <div>
+      <Box>
         {data.label}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

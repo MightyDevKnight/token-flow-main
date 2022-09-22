@@ -8,6 +8,8 @@ import {
   Edge,
 } from "react-flow-renderer";
 
+import Box from "./Box";
+
 const onConnect = (params: Connection | Edge) =>
   console.log("handle onConnect", params);
 
@@ -17,13 +19,9 @@ const GroupNode: FC<NodeProps> = ({ data, isConnectable }) => {
   };
 
   return (
-    <div
-      
-    >
-      <div>
+      <Box>
         {data.label}
-      </div>
-    </div>
+      </Box>
   );
 };
 

@@ -189,7 +189,7 @@ export function checkIfAlias(token: SingleToken | string, allTokens: SingleToken
         ));
       }
     } else if (token.type === TokenTypes.COMPOSITION) {
-      return true;
+      return false;
     } else {
       aliasToken = Boolean(token.value.toString().match(aliasRegex));
     }

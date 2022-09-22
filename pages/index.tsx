@@ -5,26 +5,42 @@ import store from "../store";
 import Home from "../components/Home";
 import useSWR from "swr";
 import { convertToTokenArray } from "../utils/convertTokens";
+import { ThemeDataTypes } from '../utils/types';
 
-const fetcher = (url) => fetch(url).then((res) => res.json());
+async function fetcherFunc(...args) {
+  const [url, queryData] = args;
+  const res = await fetch(`${url}?id=${queryData}`);
+  return res.json();
+}
 
 function App() {
-  let tokens, converted;  
-  const { data, error } = useSWR(
-    "api/data",
-    fetcher
-  );
-  if(typeof data === 'object'){
-    const res = JSON.parse(data.result);
-    tokens = JSON.parse(res);
+  let converted;
+  let theme: ThemeDataTypes;
+  const router = useRouter().query;
+  const [fileName, setFileName] = useState(router.id);
+
+  const { data } = useSWR(['api/data', fileName], fetcherFunc);
+  
+  if(typeof data === 'object' && typeof fileName !== 'undefined' && data !== null){
+    const tokens = data.result.token;
+    theme = data.result.themeData;
+    
     converted = convertToTokenArray( {tokens} );
   }
-
+  useEffect(() => {
+    setFileName(router.id);
+  }, [router]);
   return (
     <>
-    {typeof data !== 'undefined' &&
+    {typeof data === 'object' &&
       <Provider store={store}>
-        <Home tokenArray={converted}/>
+        <Home 
+          tokenArray={converted}
+          activeTheme={theme?.activeTheme}
+          availableThemes={theme?.availableThemes}
+          usedTokenSet={JSON.parse(theme.usedTokenSet)}
+          themeObjects={theme.themeObjects}
+        />
       </Provider>
     }
     </>
