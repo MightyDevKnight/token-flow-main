@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { useRouter } from 'next/router'
 import store from "../store";
 import Home from "../components/Home";
+import LoadingSpinner from "../components/Loading";
 import useSWR from "swr";
 import { convertToTokenArray } from "../utils/convertTokens";
 import { ThemeDataTypes } from '../utils/types';
@@ -32,7 +33,7 @@ function App() {
   }, [router]);
   return (
     <>
-    {typeof data === 'object' &&
+    {typeof data === 'object' ?
       <Provider store={store}>
         <Home 
           tokenArray={converted}
@@ -42,6 +43,8 @@ function App() {
           themeObjects={theme.themeObjects}
         />
       </Provider>
+      :
+      <LoadingSpinner/>
     }
     </>
   )

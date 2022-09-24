@@ -7,6 +7,8 @@ export default function SearchBar(props){
   const [searchWords, setSearchWords] = useState("");
   const pressEnter = (e) => {
     if (e.key === 'Enter') {
+      props.setIsLoading(true);
+      // console.log("enter pressed")
       props.setSearchWords(searchWords);
     }
   }

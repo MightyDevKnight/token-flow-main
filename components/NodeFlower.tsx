@@ -28,13 +28,16 @@ import SearchBar from "./SearchBar";
 import ColorSelectorNode from "./ColorSelectorNode";
 import ParentNode from "./ParentNode";
 import GroupNode from "./GroupNode";
+import LoadingSpinner from "./Loading";
 import { getFlowData } from "./initialElements";
 import Theme from "./Theme";
 import store, { RootState } from "../store";
 import { ThemeDataTypes } from '../utils/types';
 
-const onLoad = (reactFlowInstance: OnLoadParams) =>
+const onLoad = (reactFlowInstance) => {
   console.log("flow loaded:", reactFlowInstance);
+  // reactFlowInstance.fitView();
+}
 const onNodeDragStop = (_: MouseEvent, node: Node) =>
   console.log("drag stop", node);
 const onElementClick = (_: MouseEvent, element: FlowElement) =>
@@ -67,10 +70,10 @@ export default function NodeFlower({
     }
   });
 
-
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [searchWords, setSearchWords] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [bgColor, setBgColor] = useState<string>(initBgColor);
   const [tokens, setTokens] = useState<
     { id: string; data: { label: string; value: string } }[]
@@ -121,6 +124,7 @@ export default function NodeFlower({
   };
 
   useEffect(() => {
+    // setIsLoading(true);
     const newTokenArray = tokenArray.filter(token => !newFilter.includes(token.type));
     const [firstNodes, firstEdges] = getFlowData(newTokenArray);
     const newEdges= [];
@@ -164,29 +168,38 @@ export default function NodeFlower({
     setEdges(tokenSetsEdges);
   }, [searchWords, tokenTypeChecked, usedTokenSet]);
 
+  useEffect(() => {
+    setIsLoading(false);
+  }, [nodes, edges])
+
   return (
     <Box style={{ height: '100' }} className="layoutflow">
       <ReactFlowProvider>
-        <SearchBar setSearchWords={setSearchWords}/>
-        <ReactFlow
-          nodes={nodes} 
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeDragStop={onNodeDragStop}
-          style={{ background: bgColor }}
-          onLoad={onLoad}
-          nodeTypes={nodeTypes}
-          connectionLineStyle={connectionLineStyle}
-          snapToGrid={true}
-          snapGrid={snapGrid}
-          defaultZoom={1}
-          panOnScroll={true}
-        >
-          <Controls />
-          <Background gap={16} size={0.5} />
-        </ReactFlow>
+        <SearchBar setSearchWords={setSearchWords} setIsLoading={setIsLoading}/>
+        {isLoading
+          ?
+          <LoadingSpinner/>
+          :
+          <ReactFlow
+            nodes={nodes} 
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onNodeDragStop={onNodeDragStop}
+            style={{ background: bgColor }}
+            onLoad={onLoad}
+            nodeTypes={nodeTypes}
+            connectionLineStyle={connectionLineStyle}
+            snapToGrid={true}
+            snapGrid={snapGrid}
+            defaultZoom={1}
+            panOnScroll={true}
+          >
+            <Controls />
+            <Background gap={16} size={0.5} />
+          </ReactFlow>
+        }
       </ReactFlowProvider>
     </Box>
   );
