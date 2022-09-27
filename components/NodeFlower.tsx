@@ -128,9 +128,16 @@ export default function NodeFlower({
     const newTokenArray = tokenArray.filter(token => !newFilter.includes(token.type));
     const [firstNodes, firstEdges] = getFlowData(newTokenArray);
     const newEdges= [];
-    let temp = searchWords.replace(/\ /g, ".");
+    let temp = searchWords.replace(/([.,;]+)/g, " ");
+    let sWord = temp.replace("/", " ").split(" ");
+    console.log(sWord);
     firstEdges.map((edge) => {
-      if(edge.id.indexOf(temp) !== -1)
+      let check = 1;
+      sWord.map(sch => {
+        if(edge.id.indexOf(sch) === -1)
+          check = 0;
+      });
+      if(check)
         newEdges.push(edge);
     });
     let filterArray = [];
@@ -151,7 +158,7 @@ export default function NodeFlower({
     let tokenSetsStatus = [];
     Object.keys(usedTokenSet).forEach((sets) => {
       if(usedTokenSet[sets] === "enabled") {
-        tokenSetsStatus.push(sets.replaceAll("/", "."));
+        tokenSetsStatus.push(sets);
       }
     });
     // const [initialNodes, initialEdges] = getFlowData(filterArray);

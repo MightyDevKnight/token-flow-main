@@ -15,13 +15,15 @@ const  create = async (tokenData) => {
     let _obj = [];
     Object.keys(data).map((key) => {
       const value = data[key];
-      const names = key.split("/");
       value.map((eachValue) => {
         const secondName = eachValue.name.split(".");
         if(secondName.length === 1) {
           secondName.splice(0, 0, "noGroupName");
         }
-        const realNames = names.concat(secondName);
+        let realNames = [];
+        realNames.push(key);
+        realNames = realNames.concat(secondName);
+        console.log(realNames);
 
         let res = {};
         let tmp = res;

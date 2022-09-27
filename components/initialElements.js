@@ -46,17 +46,32 @@ export function getFlowData(converted){
   const headerHeight = 40;
   const margin = 16;
 
+  let checkParentId = "";
+  let realIndex = -1;
+  let yPosition = margin;
+  let sameParentIndex = 0;
   Object.entries(root).forEach(([parentId, children], rootIndex) => {
+    sameParentIndex ++;
+    const parentFirstName = parentId.split("/")[0];
+    if (parentFirstName !== checkParentId) {
+      checkParentId = parentFirstName;
+      realIndex ++;
+      yPosition = margin;
+      sameParentIndex = 1;
+    }
     transformed.push({
       id: parentId,
       connectable: true,
       type: 'parent',
       position: {
         x:
-          rootIndex > 0
-            ? margin + rootIndex * columnWidth*2 + rowGap * rootIndex
+          realIndex > 0
+            ? margin + realIndex * columnWidth*2 + rowGap * realIndex
             : margin,
-        y: margin,
+        y: 
+          yPosition !== margin
+            ? yPosition + rowGap * sameParentIndex
+            : yPosition
       },
       data: { label: parentId },
     });
@@ -135,6 +150,7 @@ export function getFlowData(converted){
       });
       totalHeight = totalHeight + groupHeight + rowGap;
     });
+    yPosition += totalHeight;
   });
 
   const nodes = transformed;
