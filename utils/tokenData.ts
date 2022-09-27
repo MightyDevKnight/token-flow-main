@@ -43,7 +43,7 @@ const  create = async (tokenData) => {
       _.merge(themeInfo, _obj[i]);
     }
 
-    await fs.writeFileSync(file, JSON.stringify(themeInfo, null, 2));
+    await fs.writeFileSync(file, JSON.stringify(themeInfo, null, 2).replaceAll("[", "").replaceAll("]", ""));
     return fileName;
   } catch (error) {
     return error;

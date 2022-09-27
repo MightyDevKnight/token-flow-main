@@ -111,7 +111,7 @@ export function getFlowData(converted){
             type: 'selectorNode',
             parentNode: parentId,
           });
-        } else if(token.type === 'typography'){
+        } else {
           Object.values(token.value).forEach((value, idx) => {
             transformed.push({
               id: `${token.name}-${value}`,

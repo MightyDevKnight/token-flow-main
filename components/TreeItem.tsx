@@ -54,7 +54,7 @@ const TreeItem: React.FC<Props> = ({
   tokenType
 }) => {
   const dispatch = useDispatch();
-  const [isChecked, setIsChecked] = React.useState(true);
+  const [isChecked, setIsChecked] = React.useState(false);
   const tokenTypeChecked = useSelector((state: RootState) => (state.tokenType));
 
   const handleSwithcClicked = React.useCallback(() => {
@@ -72,7 +72,7 @@ const TreeItem: React.FC<Props> = ({
   return (
     <form>
       <Flex css={{ alignItems: 'center' }}>
-        <Switch checked={isChecked} id="s1" onCheckedChange={handleSwithcClicked} >
+        <Switch checked={!isChecked} id="s1" onCheckedChange={handleSwithcClicked} >
           <SwitchThumb />
         </Switch>
         <Label htmlFor="s1" css={{ paddingLeft: 10 }}>

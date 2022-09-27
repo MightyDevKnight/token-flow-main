@@ -65,7 +65,7 @@ export default function NodeFlower({
   const usedTokenSet = useSelector((state: RootState) => (state.themeTokenSet)).usedTokenSet;
   let newFilter = [];
   Object.entries(tokenTypeChecked).forEach((tokenStatus) => {
-    if(tokenStatus[1] === false) {
+    if(tokenStatus[1] === true) {
       newFilter.push(tokenStatus[0].toLowerCase());
     }
   });
@@ -154,18 +154,29 @@ export default function NodeFlower({
         tokenSetsStatus.push(sets.replaceAll("/", "."));
       }
     });
-    const [initialNodes, initialEdges] = getFlowData(filterArray);
-    let tokenSetsEdges = [];
-    tokenSetsStatus.map((status) => {
-      Object.keys(initialEdges).forEach((ed) => {
-        if(initialEdges[ed].source.includes(status)) {
-          tokenSetsEdges.push(initialEdges[ed]);
-          initialNodes.find(item => item.id === initialEdges[ed].target).data.value = initialNodes.find(item => item.id === initialEdges[ed].source).data.value;
-        }
-      });
+    // const [initialNodes, initialEdges] = getFlowData(filterArray);
+    // let tokenSetsEdges = [];
+    // tokenSetsStatus.map((status) => {
+    //   Object.keys(initialEdges).forEach((ed) => {
+    //     if(initialEdges[ed].source.includes(status)) {
+    //       tokenSetsEdges.push(initialEdges[ed]);
+    //       initialNodes.find(item => item.id === initialEdges[ed].target).data.value = initialNodes.find(item => item.id === initialEdges[ed].source).data.value;
+    //     }
+    //   });
+    // });
+    let fillterByTokenSets = [];
+    filterArray.map(arr => {
+      for (let i = 0; i < tokenSetsStatus.length; i ++) {
+        if(arr.name.indexOf(tokenSetsStatus[i]) !== -1)
+          fillterByTokenSets.push(arr);
+      }
+    });
+    const [initialNodes, initialEdges] = getFlowData(fillterByTokenSets);
+    Object.keys(initialEdges).forEach(ed => {
+      initialNodes.find(item => item.id === initialEdges[ed].target).data.value = initialNodes.find(item => item.id === initialEdges[ed].source).data.value;
     });
     setNodes(initialNodes);
-    setEdges(tokenSetsEdges);
+    setEdges(initialEdges);
   }, [searchWords, tokenTypeChecked, usedTokenSet]);
 
   useEffect(() => {
