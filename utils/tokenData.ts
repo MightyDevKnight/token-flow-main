@@ -23,7 +23,6 @@ const  create = async (tokenData) => {
         let realNames = [];
         realNames.push(key);
         realNames = realNames.concat(secondName);
-        console.log(realNames);
 
         let res = {};
         let tmp = res;

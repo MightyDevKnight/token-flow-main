@@ -63,12 +63,7 @@ export default function NodeFlower({
 
   const tokenTypeChecked = useSelector((state: RootState) => (state.tokenType));
   const usedTokenSet = useSelector((state: RootState) => (state.themeTokenSet)).usedTokenSet;
-  let newFilter = [];
-  Object.entries(tokenTypeChecked).forEach((tokenStatus) => {
-    if(tokenStatus[1] === true) {
-      newFilter.push(tokenStatus[0].toLowerCase());
-    }
-  });
+  
 
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
@@ -124,13 +119,17 @@ export default function NodeFlower({
   };
 
   useEffect(() => {
-    // setIsLoading(true);
-    const newTokenArray = tokenArray.filter(token => !newFilter.includes(token.type));
+    let newFilter = [];
+    Object.entries(tokenTypeChecked).forEach((tokenStatus) => {
+      if(tokenStatus[1] === false) {
+        newFilter.push(tokenStatus[0].toLowerCase());
+      }
+    });
+    const newTokenArray = tokenArray.filter(token => newFilter.includes(token.type.toLowerCase()));
     const [firstNodes, firstEdges] = getFlowData(newTokenArray);
     const newEdges= [];
     let temp = searchWords.replace(/([.,;]+)/g, " ");
     let sWord = temp.replace("/", " ").split(" ");
-    console.log(sWord);
     firstEdges.map((edge) => {
       let check = 1;
       sWord.map(sch => {
