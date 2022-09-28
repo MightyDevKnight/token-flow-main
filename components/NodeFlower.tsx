@@ -219,7 +219,9 @@ export default function NodeFlower({
             defaultZoom={1}
             panOnScroll={true}
           >
-            <Controls />
+            <Box style={{position: 'fixed', left: '200px', zIndex: '999', bottom: '0px'}}>
+              <Controls />
+            </Box>
             <Background gap={16} size={0.5} />
           </ReactFlow>
         }
