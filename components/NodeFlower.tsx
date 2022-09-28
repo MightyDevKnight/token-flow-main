@@ -178,9 +178,15 @@ export default function NodeFlower({
       }
     });
     const [initialNodes, initialEdges] = getFlowData(fillterByTokenSets);
+
     Object.keys(initialEdges).forEach(ed => {
-      initialNodes.find(item => item.id === initialEdges[ed].target).data.value = initialNodes.find(item => item.id === initialEdges[ed].source).data.value;
+      let temp = initialEdges[ed].source;
+      while(initialEdges.find(o => o.target === temp)) {
+        temp = initialEdges.find(o => o.target === temp).source;
+      }
+      initialNodes.find(item => item.id === initialEdges[ed].target).data.value = initialNodes.find(item => item.id === temp).data.value;
     });
+
     setNodes(initialNodes);
     setEdges(initialEdges);
   }, [searchWords, tokenTypeChecked, usedTokenSet]);
