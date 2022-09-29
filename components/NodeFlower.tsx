@@ -126,24 +126,49 @@ export default function NodeFlower({
       }
     });
     const newTokenArray = tokenArray.filter(token => newFilter.includes(token.type.toLowerCase()));
-    const [firstNodes, firstEdges] = getFlowData(newTokenArray);
-    const newEdges= [];
-    let temp = searchWords.replace(/([.,;]+)/g, " ");
-    let sWord = temp.replace("/", " ").split(" ");
-    firstEdges.map((edge) => {
-      let check = 1;
-      sWord.map(sch => {
-        if(edge.id.indexOf(sch) === -1)
-          check = 0;
-      });
-      if(check)
-        newEdges.push(edge);
+
+    let tokenSetsStatus = [];
+    Object.keys(usedTokenSet).forEach((sets) => {
+      if(usedTokenSet[sets] === "enabled") {
+        tokenSetsStatus.push(sets);
+      }
     });
+
+    let fillterByTokenSets = [];
+    newTokenArray.map(arr => {
+      for (let i = 0; i < tokenSetsStatus.length; i ++) {
+        if(arr.name.indexOf(tokenSetsStatus[i]) !== -1)
+          fillterByTokenSets.push(arr);
+      }
+    });
+
+    const [firstNodes, firstEdges] = getFlowData(fillterByTokenSets);
+    let newEdges= [];
     let filterArray = [];
-    if(!searchWords)
-      filterArray = newTokenArray;
-    else {
-      newTokenArray.map((token) => {
+
+
+    if(searchWords) {
+      let sWord = searchWords.replace(/([.,;]+)/g, " ").replace("/", " ").split(" ");
+
+      firstEdges.map((edge) => {
+        let check = 1;
+        sWord.map(sch => {
+          if(edge.id.toLocaleLowerCase().indexOf(sch.toLocaleLowerCase()) === -1)
+            check = 0;
+        });
+        if(check) {
+          newEdges.push(edge);
+          let tmp = firstEdges.find(fedge => fedge.target === edge.source);
+          while(tmp) {
+            newEdges.push(tmp);
+            tmp = firstEdges.find(fedge => fedge.target === tmp.source);
+          }
+        }
+      });
+
+      newEdges = newEdges.filter((v,i,a)=>a.findIndex(v2=>(v2.id===v.id))===i);
+
+      fillterByTokenSets.map((token) => {
         let flag = 0;
         newEdges.map((edge) => {
           if((token.name === edge.source || token.name === edge.target))
@@ -153,31 +178,11 @@ export default function NodeFlower({
           filterArray.push(token);
         }
       });
+    } else {
+      filterArray = fillterByTokenSets;
     }
-    let tokenSetsStatus = [];
-    Object.keys(usedTokenSet).forEach((sets) => {
-      if(usedTokenSet[sets] === "enabled") {
-        tokenSetsStatus.push(sets);
-      }
-    });
-    // const [initialNodes, initialEdges] = getFlowData(filterArray);
-    // let tokenSetsEdges = [];
-    // tokenSetsStatus.map((status) => {
-    //   Object.keys(initialEdges).forEach((ed) => {
-    //     if(initialEdges[ed].source.includes(status)) {
-    //       tokenSetsEdges.push(initialEdges[ed]);
-    //       initialNodes.find(item => item.id === initialEdges[ed].target).data.value = initialNodes.find(item => item.id === initialEdges[ed].source).data.value;
-    //     }
-    //   });
-    // });
-    let fillterByTokenSets = [];
-    filterArray.map(arr => {
-      for (let i = 0; i < tokenSetsStatus.length; i ++) {
-        if(arr.name.indexOf(tokenSetsStatus[i]) !== -1)
-          fillterByTokenSets.push(arr);
-      }
-    });
-    const [initialNodes, initialEdges] = getFlowData(fillterByTokenSets);
+    
+    const [initialNodes, initialEdges] = getFlowData(filterArray);
 
     Object.keys(initialEdges).forEach(ed => {
       let temp = initialEdges[ed].source;
