@@ -33,6 +33,7 @@ import { getFlowData } from "./initialElements";
 import Theme from "./Theme";
 import store, { RootState } from "../store";
 import { ThemeDataTypes } from '../utils/types';
+import { CircleBackslashIcon } from "@radix-ui/react-icons";
 
 const onLoad = (reactFlowInstance) => {
   console.log("flow loaded:", reactFlowInstance);
@@ -149,35 +150,48 @@ export default function NodeFlower({
 
     if(searchWords) {
       let sWord = searchWords.replace(/([.,;]+)/g, " ").replace("/", " ").split(" ");
-
-      firstEdges.map((edge) => {
+      let nameArray = [];
+      fillterByTokenSets.map(token => {
         let check = 1;
         sWord.map(sch => {
-          if(edge.id.toLocaleLowerCase().indexOf(sch.toLocaleLowerCase()) === -1)
+          if(token.name.toLocaleLowerCase().indexOf(sch.toLocaleLowerCase()) === -1)
             check = 0;
         });
         if(check) {
-          newEdges.push(edge);
-          let tmp = firstEdges.find(fedge => fedge.target === edge.source);
-          while(tmp) {
-            newEdges.push(tmp);
-            tmp = firstEdges.find(fedge => fedge.target === tmp.source);
+          nameArray.push(token.name);
+        }
+      });
+
+      firstEdges.map(edge => {
+        nameArray.map(name => {
+          if(edge.id.includes(name)) {
+            newEdges.push(edge);
+            let tmp = firstEdges.find(fedge => fedge.target === edge.source);
+            while(tmp) {
+              newEdges.push(tmp);
+              tmp = firstEdges.find(fedge => fedge.target === tmp.source);
+            }
           }
-        }
-      });
-
-      newEdges = newEdges.filter((v,i,a)=>a.findIndex(v2=>(v2.id===v.id))===i);
-
-      fillterByTokenSets.map((token) => {
-        let flag = 0;
-        newEdges.map((edge) => {
-          if((token.name === edge.source || token.name === edge.target))
-            flag = 1;
         });
-        if(flag === 1) {
-          filterArray.push(token);
-        }
       });
+
+      newEdges.map(edge => {
+        nameArray.push(edge.target);
+        nameArray.push(edge.source);
+      });
+
+      nameArray = nameArray.filter(function(item, pos) {
+        return nameArray.indexOf(item) == pos;
+      });
+
+      fillterByTokenSets.map(token => {
+        nameArray.map(name => {
+          if(token.name === name) {
+            filterArray.push(token);
+          }
+        });
+      });
+
     } else {
       filterArray = fillterByTokenSets;
     }
