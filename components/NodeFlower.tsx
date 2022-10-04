@@ -23,6 +23,7 @@ import ReactFlow, {
   applyEdgeChanges,
 } from "react-flow-renderer";
 
+import { checkIfAlias, getAlias, getAliasValue } from '../utils/alias';
 import Box from "./Box";
 import SearchBar from "./SearchBar";
 import ColorSelectorNode from "./ColorSelectorNode";
@@ -34,15 +35,7 @@ import Theme from "./Theme";
 import store, { RootState } from "../store";
 import { ThemeDataTypes } from '../utils/types';
 import { CircleBackslashIcon } from "@radix-ui/react-icons";
-
-const onLoad = (reactFlowInstance) => {
-  console.log("flow loaded:", reactFlowInstance);
-  // reactFlowInstance.fitView();
-}
-const onNodeDragStop = (_: MouseEvent, node: Node) =>
-  console.log("drag stop", node);
-const onElementClick = (_: MouseEvent, element: FlowElement) =>
-  console.log("click", element);
+import { setegid } from "process";
 
 const initBgColor = "#F6F8FA";
 
@@ -61,20 +54,22 @@ export type TokenFlowData = {
 export default function NodeFlower({
   tokenArray,
 }: TokenFlowData) {
-
-  const tokenTypeChecked = useSelector((state: RootState) => (state.tokenType));
-  const usedTokenSet = useSelector((state: RootState) => (state.themeTokenSet)).usedTokenSet;
-  
-
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [searchWords, setSearchWords] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedElement, setSelectedElement] = useState({});
   const [bgColor, setBgColor] = useState<string>(initBgColor);
   const [tokens, setTokens] = useState<
     { id: string; data: { label: string; value: string } }[]
   >(nodes.map((e) => ({ id: e.id, data: e.data })));
 
+  const onLoad = (reactFlowInstance) =>
+    console.log("flow loaded:", reactFlowInstance);
+  const onNodeDragStop = (_: MouseEvent, node: Node) =>
+    console.log("drag stop", node);
+  const onElementClick = (_: MouseEvent, element: FlowElement) =>
+    setSelectedElement(element);
 
   const onNodesChange = useCallback((changes) => setNodes((ns) => applyNodeChanges(changes, ns)), []);
   const onEdgesChange = useCallback((changes) => setEdges((es) => applyEdgeChanges(changes, es)), []);    
@@ -120,83 +115,56 @@ export default function NodeFlower({
   };
 
   useEffect(() => {
-    let newFilter = [];
-    Object.entries(tokenTypeChecked).forEach((tokenStatus) => {
-      if(tokenStatus[1] === false) {
-        newFilter.push(tokenStatus[0].toLowerCase());
-      }
-    });
-    const newTokenArray = tokenArray.filter(token => newFilter.includes(token.type.toLowerCase()));
 
-    let tokenSetsStatus = [];
-    Object.keys(usedTokenSet).forEach((sets) => {
-      if(usedTokenSet[sets] === "enabled") {
-        tokenSetsStatus.push(sets);
-      }
-    });
-
-    let fillterByTokenSets = [];
-    newTokenArray.map(arr => {
-      for (let i = 0; i < tokenSetsStatus.length; i ++) {
-        if(arr.name.indexOf(tokenSetsStatus[i]) !== -1)
-          fillterByTokenSets.push(arr);
-      }
-    });
-
-    const [firstNodes, firstEdges] = getFlowData(fillterByTokenSets);
-    let newEdges= [];
-    let filterArray = [];
-
+    let finalTokenArray = []; // Store the result of the tokens
 
     if(searchWords) {
-      let sWord = searchWords.replace(/([.,;]+)/g, " ").replace("/", " ").split(" ");
-      let nameArray = [];
-      fillterByTokenSets.map(token => {
+      let searchWordArray = searchWords.replace(/([.,;]+)/g, " ").replace("/", " ").split(" ");
+      let filterBySearchWordTokenArray = [];
+      let aliasTokenArray = []; // Alias token array
+      tokenArray.map(token => { // Get only filter by token's name
         let check = 1;
-        sWord.map(sch => {
-          if(token.name.toLocaleLowerCase().indexOf(sch.toLocaleLowerCase()) === -1)
+        searchWordArray.map(sch => {
+          if(token.name.toLowerCase().indexOf(sch.toLowerCase()) === -1)
             check = 0;
         });
-        if(check) {
-          nameArray.push(token.name);
+        if(check) filterBySearchWordTokenArray.push(token);
+        if(token.type !== 'typography' && token.type !== 'boxShadow' && token.type !== 'composition'&& checkIfAlias(token.value)) aliasTokenArray.push(token);
+
+      });
+
+      filterBySearchWordTokenArray.map(token => { // Get all tokens related to search results
+
+        finalTokenArray.push(token);
+        // Get the target token if the search token is source token.
+
+        if(token.type !== 'typography' && token.type !== 'boxShadow' && token.type !== 'composition'&& checkIfAlias(token.value)) {
+          let temp = token;
+          while(temp) { // Deep searching
+            temp = tokenArray.find(secondToken => secondToken.name.indexOf(getAlias(temp.value)) !== -1);
+            if(temp)
+              finalTokenArray.push(temp);
+          }
+        }
+        // Get the source token if the search token is target token.
+
+        let tmp = aliasTokenArray.find(secondToken => token.name.indexOf(getAlias(secondToken.value)) !== -1);
+        while(tmp) { // Deep searching
+          finalTokenArray.push(tmp);
+          tmp = aliasTokenArray.find(secondToken => tmp.name.indexOf(getAlias(secondToken.value)) !== -1);
         }
       });
 
-      firstEdges.map(edge => {
-        nameArray.map(name => {
-          if(edge.id.includes(name)) {
-            newEdges.push(edge);
-            let tmp = firstEdges.find(fedge => fedge.target === edge.source);
-            while(tmp) {
-              newEdges.push(tmp);
-              tmp = firstEdges.find(fedge => fedge.target === tmp.source);
-            }
-          }
-        });
+      finalTokenArray = finalTokenArray.filter(function(item, pos) { // remove duplicated tokens
+        return finalTokenArray.indexOf(item) == pos;
       });
-
-      newEdges.map(edge => {
-        nameArray.push(edge.target);
-        nameArray.push(edge.source);
-      });
-
-      nameArray = nameArray.filter(function(item, pos) {
-        return nameArray.indexOf(item) == pos;
-      });
-
-      fillterByTokenSets.map(token => {
-        nameArray.map(name => {
-          if(token.name === name) {
-            filterArray.push(token);
-          }
-        });
-      });
-
+      
     } else {
-      filterArray = fillterByTokenSets;
+      finalTokenArray = tokenArray;
     }
     
-    const [initialNodes, initialEdges] = getFlowData(filterArray);
+    const [initialNodes, initialEdges] = getFlowData(finalTokenArray);
+    // Set the real value instead of alias(deep reference check)
 
     Object.keys(initialEdges).forEach(ed => {
       let temp = initialEdges[ed].source;
@@ -208,11 +176,20 @@ export default function NodeFlower({
 
     setNodes(initialNodes);
     setEdges(initialEdges);
-  }, [searchWords, tokenTypeChecked, usedTokenSet]);
+  }, [searchWords, tokenArray]);
 
   useEffect(() => {
-    setIsLoading(false);
-  }, [nodes, edges])
+    let temp = [];
+    console.log("selectedElement", selectedElement);
+    edges.map(ed => {
+      if(ed.target === selectedElement.id || ed.source === selectedElement.id)
+        ed["style"] = {stroke: "red", strokeWidth: 5};
+      else
+        ed["style"] = {stroke: "#b1b1b7", strokeWidth: 1};
+      temp.push(ed);
+    });
+    setEdges(temp);
+  }, [selectedElement]);
 
   return (
     <Box style={{ height: '100' }} className="layoutflow">
@@ -229,6 +206,7 @@ export default function NodeFlower({
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeDragStop={onNodeDragStop}
+            onNodeClick={onElementClick}
             style={{ background: bgColor }}
             onLoad={onLoad}
             nodeTypes={nodeTypes}

@@ -25,7 +25,6 @@ function App() {
   if(typeof data === 'object' && typeof fileName !== 'undefined' && data !== null){
     const tokens = data.result.token;
     theme = data.result.themeData;
-    
     converted = convertToTokenArray( {tokens} );
   }
   useEffect(() => {
