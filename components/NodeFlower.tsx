@@ -180,7 +180,6 @@ export default function NodeFlower({
 
   useEffect(() => {
     let temp = [];
-    console.log("selectedElement", selectedElement);
     edges.map(ed => {
       if(ed.target === selectedElement.id || ed.source === selectedElement.id)
         ed["style"] = {stroke: "red", strokeWidth: 5};
@@ -190,6 +189,10 @@ export default function NodeFlower({
     });
     setEdges(temp);
   }, [selectedElement]);
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, [nodes, edges])
 
   return (
     <Box style={{ height: '100' }} className="layoutflow">
