@@ -57,8 +57,6 @@ export default function NodeFlower({
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [searchWords, setSearchWords] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedElement, setSelectedElement] = useState({});
   const [bgColor, setBgColor] = useState<string>(initBgColor);
   const [tokens, setTokens] = useState<
     { id: string; data: { label: string; value: string } }[]
@@ -68,8 +66,22 @@ export default function NodeFlower({
     console.log("flow loaded:", reactFlowInstance);
   const onNodeDragStop = (_: MouseEvent, node: Node) =>
     console.log("drag stop", node);
-  const onElementClick = (_: MouseEvent, element: FlowElement) =>
-    setSelectedElement(element);
+  const onElementClick = (_: MouseEvent, element: FlowElement) => {
+    let temp = [];
+    edges.map(ed => {
+      if(ed.target === element.id || ed.source === element.id) {
+        console.log(ed.style["stroke"]);
+        if(ed.style.stroke === "red")
+          ed["style"] = {stroke: "#b1b1b7", strokeWidth: 2};
+        else
+          ed["style"] = {stroke: "red", strokeWidth: 5};
+      }
+      else
+        ed["style"] = {stroke: "#b1b1b7", strokeWidth: 2};
+      temp.push(ed);
+    });
+    setEdges(temp);
+  }
 
   const onNodesChange = useCallback((changes) => setNodes((ns) => applyNodeChanges(changes, ns)), []);
   const onEdgesChange = useCallback((changes) => setEdges((es) => applyEdgeChanges(changes, es)), []);    
@@ -180,30 +192,10 @@ export default function NodeFlower({
     setEdges(initialEdges);
   }, [searchWords, tokenArray]);
 
-  useEffect(() => {
-    let temp = [];
-    edges.map(ed => {
-      if(ed.target === selectedElement.id || ed.source === selectedElement.id)
-        ed["style"] = {stroke: "red", strokeWidth: 5};
-      else
-        ed["style"] = {stroke: "#b1b1b7", strokeWidth: 2};
-      temp.push(ed);
-    });
-    setEdges(temp);
-  }, [selectedElement]);
-
-  useEffect(() => {
-    setIsLoading(false);
-  }, [nodes, edges]);
-
   return (
     <Box style={{ height: '100' }} className="layoutflow">
       <ReactFlowProvider>
-        <SearchBar setSearchWords={setSearchWords} setIsLoading={setIsLoading}/>
-        {isLoading
-          ?
-          <LoadingSpinner/>
-          :
+        <SearchBar setSearchWords={setSearchWords}/>
           <ReactFlow
             nodes={nodes} 
             edges={edges}
@@ -226,7 +218,6 @@ export default function NodeFlower({
             </Box>
             <Background gap={16} size={0.5} />
           </ReactFlow>
-        }
       </ReactFlowProvider>
     </Box>
   );
