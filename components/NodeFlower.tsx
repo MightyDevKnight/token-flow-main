@@ -148,11 +148,13 @@ export default function NodeFlower({
         }
         // Get the source token if the search token is target token.
 
-        let tmp = aliasTokenArray.find(secondToken => token.name.indexOf(getAlias(secondToken.value)) !== -1);
-        while(tmp) { // Deep searching
-          finalTokenArray.push(tmp);
-          tmp = aliasTokenArray.find(secondToken => tmp.name.indexOf(getAlias(secondToken.value)) !== -1);
-        }
+        let firstRef = aliasTokenArray.filter(secondToken => token.name.indexOf(getAlias(secondToken.value)) !== -1);
+        firstRef.map(tmp => { // Deep searching
+          while(tmp) {
+            finalTokenArray.push(tmp);
+            tmp = aliasTokenArray.find(secondToken => tmp.name.indexOf(getAlias(secondToken.value)) !== -1);
+          }
+        });
       });
 
       finalTokenArray = finalTokenArray.filter(function(item, pos) { // remove duplicated tokens
@@ -184,7 +186,7 @@ export default function NodeFlower({
       if(ed.target === selectedElement.id || ed.source === selectedElement.id)
         ed["style"] = {stroke: "red", strokeWidth: 5};
       else
-        ed["style"] = {stroke: "#b1b1b7", strokeWidth: 1};
+        ed["style"] = {stroke: "#b1b1b7", strokeWidth: 2};
       temp.push(ed);
     });
     setEdges(temp);
@@ -192,7 +194,7 @@ export default function NodeFlower({
 
   useEffect(() => {
     setIsLoading(false);
-  }, [nodes, edges])
+  }, [nodes, edges]);
 
   return (
     <Box style={{ height: '100' }} className="layoutflow">
