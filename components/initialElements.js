@@ -166,6 +166,10 @@ export function getFlowData(converted){
                 source: t.name,
                 target: token.name,
                 id: `${token.name}-${t.name}`,
+                style: {
+                  storke: "#b1b1b7",
+                  strokeWidth: 2,
+                },
               });
             }
           })

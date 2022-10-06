@@ -204,7 +204,7 @@ export default function NodeFlower({
             onConnect={onConnect}
             onNodeDragStop={onNodeDragStop}
             onNodeClick={onElementClick}
-            style={{ background: bgColor }}
+            style={{ background: bgColor, top: 40 }}
             onLoad={onLoad}
             nodeTypes={nodeTypes}
             connectionLineStyle={connectionLineStyle}
